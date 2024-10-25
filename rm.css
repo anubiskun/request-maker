@@ -1,0 +1,569 @@
+/**
+ * Copyright (c) 2011, 2014 Juho Nurminen
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ *    1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ *
+ *    2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ *
+ *    3. This notice may not be removed or altered from any source
+ *    distribution.
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-user-select: none;
+    outline: none;
+    box-sizing: border-box;
+    border: none;
+    background: transparent;
+}
+
+[contenteditable], [contenteditable] *, input {
+    -webkit-user-select: text;
+}
+
+::-webkit-validation-bubble-message {
+    -webkit-box-shadow: none;
+    border: solid 1px #BB0;
+    font: -webkit-small-control;
+    border-radius: 0;
+    padding: 2px 5px;
+    background: #FFD;
+    font-weight: lighter;
+    margin-top: -5px;
+}
+
+::-webkit-validation-bubble-arrow {
+    display: none;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+    background: #F0F0F0;
+}
+
+body {
+    background-image: -webkit-gradient(linear, left top, 280 top, from(#F0F0F0), to(#F0F0F0), color-stop(50%, #E0E0E0), color-stop(50%, #F0F0F0));
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    min-width: 600px;
+    min-height: 278px;
+    -webkit-transition: left .5s;
+}
+
+#tabs {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+#tabs>section {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 150px;
+    overflow: auto;
+}
+
+#tabs>nav {
+    display: block;
+    width: 140px;
+    height: 100%;
+    background-image: url(images/128.png);
+    background-repeat: no-repeat;
+    background-position: center top;
+    padding: 130px 0 0 6px;
+    border-right: solid 1px #BBB;
+}
+
+#tabs>nav>button {
+    -webkit-appearance: none;
+    display: block;
+    background: #F0F0F0;
+    width: 133px;
+    height: 30px;
+    margin: -1px -1px 0 1px;
+    border: solid 1px #BBB;
+}
+
+#tabs>nav>button:last-child {
+    margin-top: 1px;
+}
+
+#tabs>nav>button[data-selected="yes"] {
+    border-right: none;
+    border-left: solid 3px #BBB;
+    width: 134px;
+    margin-left: 0;
+}
+
+
+
+/******************************************************************************
+ * Request tab                                                                *
+ ******************************************************************************/
+
+#XHRStatus {
+    position: absolute;
+    top: 10px;
+    right: 59px;
+    left: 69px;
+    width: auto;
+    height: 20px;
+    background: transparent;
+}
+
+#XHRStatus>* {
+    background: #FFF;
+    border-right: solid 1px #BBB;
+    height: 100%;
+    -webkit-transition: width .5s;
+}
+
+#HTTPStatusText {
+    position: absolute;
+    top: 10px;
+    right: 59px;
+    width: auto;
+    height: 20px;
+    padding: 2px 5px;
+    font: -webkit-small-control;
+    color: #BBB;
+}
+
+#method {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 70px;
+    height: 20px;
+    border: solid 1px #BBB;
+    font: -webkit-small-control;
+    line-height: 18px;
+    text-align: center;
+    z-index: 1;
+}
+
+#url {
+    position: absolute;
+    top: 10px;
+    height: 20px;
+    padding: 2px 5px;
+    border: solid 1px #BBB;
+    border-left: solid 70px transparent;
+    border-right: solid 60px transparent;
+    width: 100%;
+    background: transparent;
+}
+
+#request button {
+    -webkit-appearance: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 20px;
+    border: solid 1px #BBB;
+    line-height: 18px;
+    text-align: center;
+    background: transparent;
+}
+
+[data-widget="split"] {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    bottom: 10px;
+    left: 0;
+}
+[data-widget="split"]>section:first-child {
+    position: relative;
+    display: block;
+    border-bottom: solid 5px transparent;
+    margin-bottom: -5px;
+    overflow: hidden;
+}
+
+[data-widget="split"]>section:last-child {
+    position: relative;
+    display: block;
+    border-top: solid 5px transparent;
+    margin-top: -5px;
+    overflow: hidden;
+}
+
+[data-widget="split"]>div {
+    position: relative;
+    height: 10px;
+    z-index: 1;
+    cursor: row-resize;
+    background-image: url(images/handle.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#headeradder_header {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 151px;
+    height: 20px;
+    border: solid 1px #BBB;
+    padding: 2px 5px;
+    background: #FFF;
+    z-index: 1;
+}
+
+#headeradder_content {
+    position: absolute;
+    bottom: 0;
+    height: 20px;
+    border: solid 1px #BBB;
+    border-left: solid 151px transparent;
+    border-right: solid 20px transparent;
+    padding: 2px 5px;
+    width: 100%;
+    background: #FFF;
+    background-clip: padding-box;
+}
+
+#headeradder_button {
+    -webkit-appearance: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    border: solid 1px #BBB;
+    background: transparent;
+}
+
+#dataadder_name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 151px;
+    height: 20px;
+    border: solid 1px #BBB;
+    padding: 2px 5px;
+    background: #FFF;
+    z-index: 1;
+}
+
+#dataadder_value {
+    position: absolute;
+    bottom: 0;
+    height: 20px;
+    border: solid 1px #BBB;
+    border-left: solid 151px transparent;
+    border-right: solid 20px transparent;
+    padding: 2px 5px;
+    width: 100%;
+    background: #FFF;
+    background-clip: padding-box;
+}
+
+#dataadder_button {
+    -webkit-appearance: none;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    height: 20px;
+    border: solid 1px #BBB;
+    background: transparent;
+}
+
+[data-widget="table"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 19px;
+    left: 0;
+    border: solid 1px #BBB;
+    font: -webkit-small-control;
+    overflow: auto;
+
+}
+
+[data-widget="table-head"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    border-bottom: solid 1px #BBB;
+    white-space: nowrap;
+}
+
+[data-widget="table-head"]>* {
+    height: 25px;
+    padding: 2px 5px;
+    line-height: 21px;
+    background-color: inherit;
+    overflow: hidden;
+}
+
+[data-widget="table-head"]>*:nth-child(1) {
+    float: left;
+    width: 150px;
+    border-right: solid 1px #BBB;
+}
+
+[data-widget="table-head"]>[data-sort="asc"], [data-widget="table-head"]>[data-sort="desc"]{
+    background: #F5F5F5;
+    color: #333;
+}
+
+[data-widget="table-head"]>[data-sort="asc"]:after {
+    content: ' ';
+    float: right;
+    width: 13px;
+    height: 25px;
+    background-image: url(images/asc.png);
+}
+
+[data-widget="table-head"]>[data-sort="desc"]:after {
+    content: ' ';
+    float: right;
+    width: 13px;
+    height: 25px;
+    background-image: url(images/desc.png);
+}
+
+[data-widget="table-body"] {
+    position: absolute;
+    top: 26px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+    background: #FFF;
+}
+
+[data-widget="table-body"]>* {
+    overflow: hidden;
+    position: relative;
+}
+
+[data-widget="table-body"]>*:first-child>* {
+    border-top: none;
+}
+
+[data-widget="table-body"]>*:last-child {
+    border-bottom: solid 1px #F0F0F0;
+}
+
+
+[data-widget="table-body"]>*>* {
+    vertical-align: top;
+    padding: 2px 5px;
+    border-top: solid 1px #F0F0F0;
+    overflow: hidden;
+}
+
+[data-widget="table-body"]>*>*:not([contenteditable]) {
+    color: #BBB;
+}
+
+[data-widget="table-body"]>*>*:nth-child(1) {
+    float: left;
+    width: 150px;
+    border-right: solid 1px #F0F0F0;
+    margin-right: -1px;
+}
+
+[data-widget="table-body"]>*>*:nth-child(2) {
+    border-left: solid 1px #F0F0F0;
+}
+
+[data-widget="table-body"]>*>*:nth-child(3), [data-widget="table-body"]>*>*:last-child {
+    display: none;
+    -webkit-appearance: none;
+    color: #CCC;
+    opacity: .8;
+    text-shadow: -2px 0 #FFF, 0 2px #FFF, 2px 0 #FFF, 0 -2px #FFF;
+    background: transparent;
+}
+
+[data-widget="table-body"]>*:hover>*:nth-child(3) {
+    display: block;
+    position: absolute;
+    right: 20px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background-image: url(images/raw.png);
+}
+
+[data-widget="table-body"]>*:hover>*:last-child {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background-image: url(images/remove.png);
+}
+
+[data-widget="table-body"]>*>*:nth-child(3):hover {
+    background-image: url(images/raw.hover.png);
+}
+
+[data-widget="table-body"]>*>*:last-child:hover {
+    background-image: url(images/remove.hover.png);
+}
+
+/******************************************************************************
+ * Response headers tab                                                                *
+ ******************************************************************************/
+
+#responseheaders {
+    display: block;
+    border-left: solid 1px #BBB;
+    width: 100%;
+    height: 100%;
+    background: #FFF;
+    padding-top: 21px;
+}
+
+
+
+/******************************************************************************
+ * Document tab                                                                *
+ ******************************************************************************/
+
+#title {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    padding: 1px 5px 1px 20px;
+    line-height: 18px;
+    height: 21px;
+    background-image: url(images/16.png);
+    background-repeat: no-repeat;
+    background-position: 2px center;
+    background-color: #F0F0F0;
+    border-bottom: solid 1px #BBB;
+    font: -webkit-small-control;
+    overflow: hidden;
+}
+.title {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    padding: 1px 5px 1px 20px;
+    line-height: 18px;
+    height: 21px;
+    background-image: url(images/16.png);
+    background-repeat: no-repeat;
+    background-position: 2px center;
+    background-color: #F0F0F0;
+    border-bottom: solid 1px #BBB;
+    font: -webkit-small-control;
+    overflow: hidden;
+}
+
+#js {
+    float: right;
+    margin: 2px;
+}
+
+label[for="js"] {
+    float: right;
+}
+
+#document {
+    display: block;
+    border-left: solid 1px #BBB;
+    width: 100%;
+    height: 100%;
+    background: #FFF;
+    padding-top: 21px;
+}
+
+
+
+/******************************************************************************
+ * Source tab                                                                *
+ ******************************************************************************/
+
+#source {
+    display: block;
+    border-left: solid 1px #BBB;
+    width: 100%;
+    height: 100%;
+    background: #FFF;
+    padding-top: 21px;
+}
+
+/******************************************************************************
+ * Options tab                                                                *
+ ******************************************************************************/
+
+#tabs>section:nth-child(6) {
+    padding: 20px;
+    font: -webkit-small-control;
+}
+
+#tabs>section:nth-child(6) input[type="checkbox"] {
+    margin: 2px 5px;
+}
+
+aside {
+    font-style: italic;
+    color: #BBB;
+    margin: 20px 20px 35px 10px;
+}
+
+details {
+    font-style: italic;
+    color: #BBB;
+    margin: 0 20px 20px 10px;
+}
+
+
+/******************************************************************************
+ * Side bar                                                                   *
+ ******************************************************************************/
+
+#hider {
+    position: absolute;
+    -webkit-appearance: none;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 140px;
+    padding-right: 10px;
+    background: transparent;
+    -webkit-box-align: start;
+    text-align: right;
+    font-size: 10px;
+    color: #BBB;
+}
+
+#hider:hover {
+    color: #808080;
+}

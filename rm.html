@@ -1,0 +1,155 @@
+<!--
+
+ Copyright (c) 2011, 2012 Juho Nurminen
+
+ This software is provided 'as-is', without any express or implied
+ warranty. In no event will the authors be held liable for any damages
+ arising from the use of this software.
+
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+
+    2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+
+    3. This notice may not be removed or altered from any source
+    distribution.
+
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Request Maker</title>
+<link rel="stylesheet" type="text/css" href="rm.css">
+<script type="text/javascript" src="ui.js"></script>
+<script type="text/javascript" src="rm.js"></script>
+</head>
+<body>
+
+<div data-widget="notebook" id="tabs">
+
+	<section data-title="Request" style="height: 50%;display: block!important;">
+
+		<div id="XHRStatus"><div><!-- progress bar --></div></div>
+		<output id="HTTPStatusText"></output>
+
+		<form id="request">
+			<command id="method" />
+			<input type="url" placeholder="URL" required id="url" />
+			<button>Send</button>
+		</form>
+
+		<div data-widget="split">
+			<section>
+
+				<div data-widget="table" id="requestheaders">
+					<div data-widget="table-head">
+						<div>Header</div><div>Content</div>
+					</div>
+					<div data-widget="table-body"></div>
+				</div>
+
+				<form id="headeradder">
+					<input placeholder="header" spellcheck="false" id="headeradder_header" />
+					<input placeholder="content" spellcheck="false" id="headeradder_content" />
+					<button id="headeradder_button">+</button>
+				</form>
+
+			</section>
+			<section>
+
+				<div data-widget="table" id="requestdata">
+					<div data-widget="table-head">
+						<div>Name</div><div>Value</div>
+					</div>
+					<div data-widget="table-body"></div>
+				</div>
+
+				<form id="dataadder">
+					<input placeholder="name" spellcheck="false" id="dataadder_name" />
+					<input placeholder="value" spellcheck="false" id="dataadder_value" />
+					<button id="dataadder_button">+</button>
+				</form>
+
+			</section>
+		</div>
+
+	</section>
+
+	<section data-title="Response headers" style="height: 50%;top: unset;" data-flags="disabled">
+		<div class="title">
+			Response headers
+		</div>
+		<iframe id="responseheaders"></iframe>
+	</section>
+
+	<section data-title="Document" style="height: 50%;top: unset;" data-flags="disabled">
+		<div id="title">
+			about:blank
+			<input type="checkbox" id="js">
+			<label for="js">Allow JavaScript</label>
+		</div>
+		<iframe sandbox id="document"></iframe>
+	</section>
+
+	<section data-title="Source code" style="height: 50%;top: unset;" data-flags="disabled">
+		<div class="title">
+			Source Code
+		</div>
+		<iframe id="source"></iframe>
+	</section>
+
+	<section data-title="Options" style="height: 50%;top: unset;">
+		<aside>
+			Questions? Problems? Suggestions? Bugs? Visit Request Maker at the
+			<a href="https://chrome.google.com/webstore/detail/kajfghlhfkcocafkcjlajldicbikpgnp">Web Store</a> or email me at
+			<a href="mailto:request.maker@gmail.com">request.maker@gmail.com</a>.
+		</aside>
+		<input type="checkbox" id="tabAutoFocus" /><label for="tabAutoFocus">Tab auto focus</label>
+		<details>
+			<summary>What's that then?</summary>
+			Ticking the above box makes the Document (or Source code when the forementioned is N/A) tab focus automatically
+			when request data has been successfully received, i.e. after clicking the Send button. Leaving the box
+			unchecked makes the Request tab stay focused.
+		</details>
+		<input type="checkbox" id="hideTabs" /><label for="hideTabs">Hide tabs by default</label>
+		<details>
+			<summary>Wut?</summary>
+			Yeah. Hit refresh to see the effect.
+		</details>
+		<input type="checkbox" id="allowJavaScript" /><label for="allowJavaScript">Allow JavaScript by default</label>
+		<details>
+			<summary>Huh... Where?</summary>
+			In the document that's rendered inside the Document tab of course. You can also enable and disable scripting
+			directly from the Document tab itself but when you refresh the page or open a new one, it will reset back to the
+			state specified here. Note that not all scripts will work as they should: the same origin policy prevents XHR
+			(with the obvious exception of cross-origin XHR) and the script will not have access to cookies.
+		</details>
+		<input type="checkbox" id="disableRequestLogging" /><label for="disableRequestLogging">Disable request logging</label>
+		<details>
+			<summary>Why would I do that?</summary>
+			If you don't need the log all that often, it might make sense. That way you don't have to see the annoying icon
+			on every page.
+		</details>
+		<input type="checkbox" id="useDefaultScrollbarInLog" /><label for="useDefaultScrollbarInLog">Use the browser's default scrollbar in the log</label>
+		<details>
+			<summary>Umm... Why?</summary>
+			If you don't, for instance, have a scroll wheel in your mouse, the wider default scrollbar would probably be easier
+			to use.
+		</details>
+	</section>
+
+</div>
+
+<button type="button" id="hider">&lt;&lt; Hide</button>
+
+</body>
+</html>
