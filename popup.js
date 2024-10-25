@@ -49,20 +49,20 @@ function addForm(form) {
     newtab = document.createElement('td');
     newtab.title = 'Open in a new tab';
     newtab.addEventListener('click', function (e) {
-            chrome.tabs.create({'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form))))});
-            e.stopPropagation();
-        });
+        chrome.tabs.create({ 'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
+        e.stopPropagation();
+    });
     row.appendChild(newtab);
 
     row.addEventListener('click', function (e) {
-            if (e.button == 1) {
-                chrome.tabs.create({'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form))))});
-            } else {
-                chrome.tabs.getSelected(null, function (tab) {
-                    chrome.tabs.update(tab.id, {'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form))))});
-                });
-            }
-        });
+        if (e.button == 1) {
+            chrome.tabs.create({ 'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
+        } else {
+            chrome.tabs.getSelected(null, function (tab) {
+                chrome.tabs.update(tab.id, { 'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
+            });
+        }
+    });
 
     if ($('scroller').scrollTop >= $('scroller').scrollHeight - $('scroller').clientHeight - row.offsetHeight) {
         $('scroller').scrollTop = $('scroller').scrollHeight;
@@ -74,22 +74,22 @@ function matchesWithFilter(form) {
         // parse the filter
         // TODO: add special meanings for words starting with 'type:' or 'method:'
         filter = $('filter').value.replace(/"([^"]*)"|\btype:([A-Za-z0-9]+)|\bmethod:([A-Za-z0-9]+)|-([[A-Za-z0-9]+)|([^A-Za-z0-9])/g,
-                        function (match, quoted, type, method, negative, wordbreaker) {
-                            if (quoted) {
-                                return '|' + quoted.replace(/[^A-Za-z0-9]+/g, ' ') + '|';
-                            } else if (type) {
-                                types.push(type);
-                                return '|';
-                            } else if (method) {
-                                methods.push(method);
-                                return '|';
-                            } else if (negative) {
-                                exclude.push(negative);
-                                return '|';
-                            } else {
-                                return '|';
-                            }
-                        }).split('|');
+            function (match, quoted, type, method, negative, wordbreaker) {
+                if (quoted) {
+                    return '|' + quoted.replace(/[^A-Za-z0-9]+/g, ' ') + '|';
+                } else if (type) {
+                    types.push(type);
+                    return '|';
+                } else if (method) {
+                    methods.push(method);
+                    return '|';
+                } else if (negative) {
+                    exclude.push(negative);
+                    return '|';
+                } else {
+                    return '|';
+                }
+            }).split('|');
 
     // match types
     for (i = 0; i < types.length; i++) {
@@ -113,10 +113,10 @@ function matchesWithFilter(form) {
 
     // make the form into a searchable string
     form = (
-            JSON.stringify(form.headers) +
-            JSON.stringify(form.data) +
-            '\n' + form.type + '\n' + form.method + '\n' + form.url
-        ).replace(/[^A-Za-z0-9\n]+/g, ' ').toLowerCase();
+        JSON.stringify(form.headers) +
+        JSON.stringify(form.data) +
+        '\n' + form.type + '\n' + form.method + '\n' + form.url
+    ).replace(/[^A-Za-z0-9\n]+/g, ' ').toLowerCase();
 
     // negative matching
     for (i = 0; i < exclude.length; i++) {
@@ -180,8 +180,8 @@ window.addEventListener('load', function () {
                 }
             }
             setTimeout(function () {
-                    $('scroller').scrollTop = $('scroller').scrollHeight;
-                }, 0);
+                $('scroller').scrollTop = $('scroller').scrollHeight;
+            }, 0);
         };
 
         showForms();
@@ -192,18 +192,18 @@ window.addEventListener('load', function () {
 
         // update in real time
         chrome.extension.onRequest.addListener(function (form, sender) {
-                if (typeof form != 'string' && sender.tab.id == tid && matchesWithFilter(form)) {
-                    addForm(form);
-                }
-            });
+            if (typeof form != 'string' && sender.tab.id == tid && matchesWithFilter(form)) {
+                addForm(form);
+            }
+        });
 
         // set up the clear button
         $('clear').addEventListener('click', function () {
-                data.forms = [ ];
-                $('forms').innerHTML = '';
-                if (!data.noScripts) {
-                    chrome.pageAction.hide(tid);
-                }
-            });
+            data.forms = [];
+            $('forms').innerHTML = '';
+            if (!data.noScripts) {
+                chrome.pageAction.hide(tid);
+            }
+        });
     });
 });

@@ -21,7 +21,7 @@
  *    distribution.
  */
 
-var tabs = { };
+var tabs = {};
 
 delete localStorage['tabs']; // used in <= 0.1.1.6, no longer needed
 
@@ -29,45 +29,45 @@ chrome.browserAction.disable();
 
 // get form data from the content scripts
 chrome.extension.onRequest.addListener(function (form, sender, stop) {
-		var id = sender.tab.id;
+	var id = sender.tab.id;
 
-		if (!tabs[id]) {
-			tabs[id] = { };
-		}
+	if (!tabs[id]) {
+		tabs[id] = {};
+	}
 
-		if (!localStorage['tabAutoFocus']) {
-			localStorage['tabAutoFocus'] = "true";
-		} else if (!localStorage['hideTabs']) {
-			localStorage['hideTabs'] = "true";
-		}
+	if (!localStorage['tabAutoFocus']) {
+		localStorage['tabAutoFocus'] = "true";
+	} else if (!localStorage['hideTabs']) {
+		localStorage['hideTabs'] = "true";
+	}
 
-		if (form == 'noScripts' && !localStorage['disableRequestLogging']) {
-			tabs[id].noScripts = true;
-			chrome.browserAction.enable(id);
-		} else if (form == 'yesScripts') {
-			delete tabs[id].noScripts;
-			if (localStorage['disableRequestLogging']) {
-				stop();
-			}
-		} else if (!localStorage['disableRequestLogging']) {
-			if (!tabs[id].forms) {
-				tabs[id].forms = [ ];
-			}
-			tabs[id].forms.push(form);
-			chrome.browserAction.enable(id);
+	if (form == 'noScripts' && !localStorage['disableRequestLogging']) {
+		tabs[id].noScripts = true;
+		chrome.browserAction.enable(id);
+	} else if (form == 'yesScripts') {
+		delete tabs[id].noScripts;
+		if (localStorage['disableRequestLogging']) {
+			stop();
 		}
-	});
+	} else if (!localStorage['disableRequestLogging']) {
+		if (!tabs[id].forms) {
+			tabs[id].forms = [];
+		}
+		tabs[id].forms.push(form);
+		chrome.browserAction.enable(id);
+	}
+});
 
 
 // show the page action where necessary
 chrome.tabs.onUpdated.addListener(function (id, info) {
-		if (tabs[id] && tabs[id].forms) {
-			chrome.browserAction.enable(id);
-		}
-	});
+	if (tabs[id] && tabs[id].forms) {
+		chrome.browserAction.enable(id);
+	}
+});
 
 
 // clean up
 chrome.tabs.onRemoved.addListener(function (id) {
-		delete tabs[id];
-	});
+	delete tabs[id];
+});

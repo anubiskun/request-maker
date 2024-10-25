@@ -23,12 +23,12 @@
 
 function getForm() {
     var s, form = {
-            'type': 'RM',
-            'method': ui('method').__proto__.innerText,
-            'url': ui('url').__proto__.value,
-            'headers': [],
-            'data': []
-        };
+        'type': 'RM',
+        'method': ui('method').__proto__.innerText,
+        'url': ui('url').__proto__.value,
+        'headers': [],
+        'data': []
+    };
 
     for (i = 0; i < ui('requestheaders').body.childNodes.length; i++) {
         s = ui('requestheaders').body.childNodes[i].childNodes[0].innerText;
@@ -120,9 +120,9 @@ function addRow(table, data, before) {
     var i, name, value, special = false,
         row = document.createElement('div'),
         cells = [
-                document.createElement('div'),
-                document.createElement('div')
-            ],
+            document.createElement('div'),
+            document.createElement('div')
+        ],
         toggler,
         closer = document.createElement('button');
 
@@ -202,8 +202,8 @@ function toggleRowType(row) {
 
                 // split at boundaries
                 array = row.childNodes[1].innerText.replace(
-                        new RegExp('\n--' + boundary.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + '--$', 'm'), ''
-                    ).split('\n--' + boundary + '\n');
+                    new RegExp('\n--' + boundary.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + '--$', 'm'), ''
+                ).split('\n--' + boundary + '\n');
 
                 for (i = 0; i < array.length; i++) {
                     array[i] = array[i].split('\n\n'); // separate the headers from the content
@@ -223,9 +223,9 @@ function toggleRowType(row) {
                 array = row.childNodes[1].innerText.split('&');
                 for (i = 0; i < array.length; i++) {
                     addRow('requestdata', [
-                            decodeURIComponent(array[i].substr(0, array[i].indexOf('=') != -1 ? array[i].indexOf('=') : undefined )),
-                            array[i].indexOf('=') != -1 ? decodeURIComponent(array[i].substr(array[i].indexOf('=') + 1)) : ''
-                        ], row);
+                        decodeURIComponent(array[i].substr(0, array[i].indexOf('=') != -1 ? array[i].indexOf('=') : undefined)),
+                        array[i].indexOf('=') != -1 ? decodeURIComponent(array[i].substr(array[i].indexOf('=') + 1)) : ''
+                    ], row);
                 }
                 removeRow(row);
                 break;
@@ -257,10 +257,10 @@ function replaceDocument(uri) { // replaces the rendered document without changi
 
     // prevent navigation
     ui('document').__proto__.addEventListener('beforeload', function (e) {
-            if (e.url != this.src) {
-                e.preventDefault();
-            }
-        });
+        if (e.url != this.src) {
+            e.preventDefault();
+        }
+    });
 }
 
 function parseQueryString() {
@@ -270,11 +270,11 @@ function parseQueryString() {
         form = JSON.parse(decodeURIComponent(escape(atob(location.search.substring(1)))));
     } else {
         form = {
-                'method': 'POST',
-                'url': '',
-                'headers': [ ],
-                'data': [ ]
-            };
+            'method': 'POST',
+            'url': '',
+            'headers': [],
+            'data': []
+        };
     }
 
     ui('tabs').disableTab(1);
@@ -313,170 +313,170 @@ ui.onReady(function () {
 
     // set up the send button
     ui('request').__proto__.addEventListener('submit', function (e) {
-            var i, form,
-                request = new XMLHttpRequest();
+        var i, form,
+            request = new XMLHttpRequest();
 
-            e.preventDefault();
+        e.preventDefault();
 
-            ui('tabs').disableTab(1);
-            ui('tabs').disableTab(2);
-            ui('tabs').disableTab(3);
+        ui('tabs').disableTab(1);
+        ui('tabs').disableTab(2);
+        ui('tabs').disableTab(3);
 
-            // reset the status
-            ui('HTTPStatusText').__proto__.innerText = '';
-            // do the XHR
-            request.addEventListener('readystatechange', function () {
-                    var doctype, html, title;
-
-                    // update the status
-                    ui('XHRStatus').__proto__.firstChild.style.webkitTransition = null;
-                    ui('XHRStatus').__proto__.firstChild.style.width = this.readyState * 25 + '%';
-
-                    ui('url').__proto__.style.backgroundColor = ''; // clear errors
-                    switch (this.readyState) {
-                        case this.HEADERS_RECEIVED:
-                            ui('tabs').enableTab(1);
-                            if (localStorage['tabAutoFocus']) {
-                                ui('tabs').showTab(1);
-                            }
-
-                            ui('HTTPStatusText').__proto__.innerText = this.status + ' ' + this.statusText;
-                            ui('responseheaders').__proto__.contentWindow.location.replace('view-source/view-source.html?m=text/plain&c=' + encodeURIComponent(this.getAllResponseHeaders()));
-                            break;
-                        case this.responseText && this.DONE:
-                            ui('source').__proto__.contentWindow.location.replace('view-source/view-source.html?m=' + this.getResponseHeader("Content-Type").split(';')[0] + '&c=' + encodeURIComponent(this.responseText));
-                            ui('tabs').enableTab(3);
-                            if (localStorage['tabAutoFocus']) {
-                                ui('tabs').showTab(3);
-                            }
-                            if (this.getResponseHeader("Content-Type") && (
-                                    this.getResponseHeader("Content-Type").substr(0, 9)  == 'text/html' ||
-                                    this.getResponseHeader("Content-Type").substr(0, 17) == 'application/xhtml'
-                                )) {
-                                // parse the title
-                                ui('title').__proto__.style.backgroundImage = "url('chrome://favicon/" + form.url + "')";
-                                title = this.responseText.match(/(?:<title(?:\s[^>]*)?>)((?:\n|.)*)<\/title(?:\s[^>]*)*>/im);
-                                title = title ? title[1].replace('\n', ' ')
-                                                        .replace(/&([^;]*);?/g, function ($0, $1) { // parse html entities
-                                                                switch ($1) {
-                                                                    case 'amp':     return '&';
-                                                                    case 'lt':      return '<';
-                                                                    case 'gt':      return '>';
-                                                                    case 'quot':    return '"';
-                                                                    default: if ($1.charAt(0) == '#') {
-                                                                        $1 = $1.substr(1);
-                                                                        if ($1.charAt(0).toLowerCase() == 'x') {
-                                                                            $1 = '0' + $1;
-                                                                        }
-
-                                                                        return String.fromCharCode($1);
-                                                                    }
-                                                                }
-                                                            }) :
-                                                        form.url;
-                                ui('title').__proto__.replaceChild(document.createTextNode(title), ui('title').__proto__.firstChild); // .firstChild is the text node
-
-                                // parse the doctype
-                                html = this.responseText.replace(/^[\s\n]*<!DOCTYPE\s[^>]*>/im, function (s) {
-                                        doctype = s;
-                                        return '';
-                                    });
-
-                                // render the document
-                                replaceDocument('data:'
-                                        + this.getResponseHeader("Content-Type").replace(/^application\/xhtml[^;]*/, 'text/html')
-                                        + ';base64,'
-                                        + btoa(unescape(encodeURI(
-                                                (doctype ? doctype : '') +
-                                                '<base href="' +
-                                                form.url.replace(/&/g, '&amp;').replace(/</g, '&lt;') // escape special characters
-                                                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;') +
-                                                '" />' + html
-                                            )))
-                                    );
-
-                                ui('tabs').enableTab(2);
-                                if (localStorage['tabAutoFocus']) {
-                                    ui('tabs').showTab(2);
-                                }
-                            }
-                    }
-                });
-
-            request.addEventListener('error', function () {
-                    ui('url').__proto__.style.backgroundColor = '#FDD';
-                });
+        // reset the status
+        ui('HTTPStatusText').__proto__.innerText = '';
+        // do the XHR
+        request.addEventListener('readystatechange', function () {
+            var doctype, html, title;
 
             // update the status
-            ui('XHRStatus').__proto__.firstChild.style.webkitTransition = '0';
-            ui('XHRStatus').__proto__.firstChild.style.width = '0';
+            ui('XHRStatus').__proto__.firstChild.style.webkitTransition = null;
+            ui('XHRStatus').__proto__.firstChild.style.width = this.readyState * 25 + '%';
 
-            try {
+            ui('url').__proto__.style.backgroundColor = ''; // clear errors
+            switch (this.readyState) {
+                case this.HEADERS_RECEIVED:
+                    ui('tabs').enableTab(1);
+                    if (localStorage['tabAutoFocus']) {
+                        ui('tabs').showTab(1);
+                    }
 
-                // send it
-                form = getForm();
-                request.open(form.method, form.url);
-                for (i = 0; i < form.headers.length; i++) {
-                    request.setRequestHeader(form.headers[i][0], form.headers[i][1]);
-                }
-                request.send(stringifyFormData(form));
+                    ui('HTTPStatusText').__proto__.innerText = this.status + ' ' + this.statusText;
+                    ui('responseheaders').__proto__.contentWindow.location.replace('view-source/view-source.html?m=text/plain&c=' + encodeURIComponent(this.getAllResponseHeaders()));
+                    break;
+                case this.responseText && this.DONE:
+                    ui('source').__proto__.contentWindow.location.replace('view-source/view-source.html?m=' + this.getResponseHeader("Content-Type").split(';')[0] + '&c=' + encodeURIComponent(this.responseText));
+                    ui('tabs').enableTab(3);
+                    if (localStorage['tabAutoFocus']) {
+                        ui('tabs').showTab(3);
+                    }
+                    if (this.getResponseHeader("Content-Type") && (
+                        this.getResponseHeader("Content-Type").substr(0, 9) == 'text/html' ||
+                        this.getResponseHeader("Content-Type").substr(0, 17) == 'application/xhtml'
+                    )) {
+                        // parse the title
+                        ui('title').__proto__.style.backgroundImage = "url('chrome://favicon/" + form.url + "')";
+                        title = this.responseText.match(/(?:<title(?:\s[^>]*)?>)((?:\n|.)*)<\/title(?:\s[^>]*)*>/im);
+                        title = title ? title[1].replace('\n', ' ')
+                            .replace(/&([^;]*);?/g, function ($0, $1) { // parse html entities
+                                switch ($1) {
+                                    case 'amp': return '&';
+                                    case 'lt': return '<';
+                                    case 'gt': return '>';
+                                    case 'quot': return '"';
+                                    default: if ($1.charAt(0) == '#') {
+                                        $1 = $1.substr(1);
+                                        if ($1.charAt(0).toLowerCase() == 'x') {
+                                            $1 = '0' + $1;
+                                        }
 
-            } catch (e) {
-                ui('url').__proto__.style.backgroundColor = '#FDD';
-                return;
+                                        return String.fromCharCode($1);
+                                    }
+                                }
+                            }) :
+                            form.url;
+                        ui('title').__proto__.replaceChild(document.createTextNode(title), ui('title').__proto__.firstChild); // .firstChild is the text node
+
+                        // parse the doctype
+                        html = this.responseText.replace(/^[\s\n]*<!DOCTYPE\s[^>]*>/im, function (s) {
+                            doctype = s;
+                            return '';
+                        });
+
+                        // render the document
+                        replaceDocument('data:'
+                            + this.getResponseHeader("Content-Type").replace(/^application\/xhtml[^;]*/, 'text/html')
+                            + ';base64,'
+                            + btoa(unescape(encodeURI(
+                                (doctype ? doctype : '') +
+                                '<base href="' +
+                                form.url.replace(/&/g, '&amp;').replace(/</g, '&lt;') // escape special characters
+                                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;') +
+                                '" />' + html
+                            )))
+                        );
+
+                        ui('tabs').enableTab(2);
+                        if (localStorage['tabAutoFocus']) {
+                            ui('tabs').showTab(2);
+                        }
+                    }
             }
-
-            // log the request in the page action
-            chrome.extension.sendRequest(form);
-
-            history.pushState(null, null, '?' + btoa(unescape(encodeURI(JSON.stringify(form)))));
-
         });
+
+        request.addEventListener('error', function () {
+            ui('url').__proto__.style.backgroundColor = '#FDD';
+        });
+
+        // update the status
+        ui('XHRStatus').__proto__.firstChild.style.webkitTransition = '0';
+        ui('XHRStatus').__proto__.firstChild.style.width = '0';
+
+        try {
+
+            // send it
+            form = getForm();
+            request.open(form.method, form.url);
+            for (i = 0; i < form.headers.length; i++) {
+                request.setRequestHeader(form.headers[i][0], form.headers[i][1]);
+            }
+            request.send(stringifyFormData(form));
+
+        } catch (e) {
+            ui('url').__proto__.style.backgroundColor = '#FDD';
+            return;
+        }
+
+        // log the request in the page action
+        chrome.extension.sendRequest(form);
+
+        history.pushState(null, null, '?' + btoa(unescape(encodeURI(JSON.stringify(form)))));
+
+    });
 
     // set up the forms and controls in the request tab
     ui('method').__proto__.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-        });
+        e.preventDefault();
+    });
     ui('method').__proto__.addEventListener('mousedown', function (e) {
-            var i, methods = ['GET', 'POST', 'HEAD', 'PUT', 'DELETE', 'OPTIONS'];
+        var i, methods = ['GET', 'POST', 'HEAD', 'PUT', 'DELETE', 'OPTIONS'];
 
-            e.preventDefault();
+        e.preventDefault();
 
-            for (i = 0; i < methods.length; i++) {
-                if (methods[i] == this.innerText) {
-                    break;
-                }
+        for (i = 0; i < methods.length; i++) {
+            if (methods[i] == this.innerText) {
+                break;
             }
-            if (e.button == 0) {
-                i++;
-            } else if (e.button == 2) {
-                i--;
-            }
-            this.innerText = methods[i + methods.length*(i < 0) - methods.length*(i >= methods.length)];
-        });
+        }
+        if (e.button == 0) {
+            i++;
+        } else if (e.button == 2) {
+            i--;
+        }
+        this.innerText = methods[i + methods.length * (i < 0) - methods.length * (i >= methods.length)];
+    });
     ui('headeradder').__proto__.addEventListener('submit', function (e) {
-            e.preventDefault();
-            addRow('requestheaders', [ui('headeradder_header').__proto__.value, ui('headeradder_content').__proto__.value]);
-            ui('headeradder_header').__proto__.value = '';
-            ui('headeradder_content').__proto__.value = '';
-        });
+        e.preventDefault();
+        addRow('requestheaders', [ui('headeradder_header').__proto__.value, ui('headeradder_content').__proto__.value]);
+        ui('headeradder_header').__proto__.value = '';
+        ui('headeradder_content').__proto__.value = '';
+    });
     ui('dataadder').__proto__.addEventListener('submit', function (e) {
-            e.preventDefault();
-            addRow('requestdata', [ui('dataadder_name').__proto__.value, ui('dataadder_value').__proto__.value]);
-            ui('dataadder_name').__proto__.value = '';
-            ui('dataadder_value').__proto__.value = '';
-        });
+        e.preventDefault();
+        addRow('requestdata', [ui('dataadder_name').__proto__.value, ui('dataadder_value').__proto__.value]);
+        ui('dataadder_name').__proto__.value = '';
+        ui('dataadder_value').__proto__.value = '';
+    });
 
     // set up the Allow JavaScript checkbox
     ui('js').__proto__.addEventListener('change', function () {
-            if(this.checked) {
-                ui('document').__proto__.sandbox = 'allow-scripts';
-            } else {
-                ui('document').__proto__.sandbox = '';
-            }
+        if (this.checked) {
+            ui('document').__proto__.sandbox = 'allow-scripts';
+        } else {
+            ui('document').__proto__.sandbox = '';
+        }
 
-            ui('document').__proto__.src = ui('document').__proto__.src;
-        });
+        ui('document').__proto__.src = ui('document').__proto__.src;
+    });
     if (localStorage['allowJavaScript']) {
         ui('js').__proto__.click();
     }
@@ -486,12 +486,12 @@ ui.onReady(function () {
         ui('tabAutoFocus').__proto__.checked = true;
     }
     ui('tabAutoFocus').__proto__.addEventListener('change', function () {
-            if(this.checked) {
-                localStorage['tabAutoFocus'] = true;
-            } else {
-                delete localStorage['tabAutoFocus'];
-            }
-        });
+        if (this.checked) {
+            localStorage['tabAutoFocus'] = true;
+        } else {
+            delete localStorage['tabAutoFocus'];
+        }
+    });
     if (localStorage['hideTabs']) {
         ui('hideTabs').__proto__.checked = true;
         ui('hider').__proto__.style.height = '100%';
@@ -499,63 +499,63 @@ ui.onReady(function () {
         document.body.style.left = '-130px';
         // queue an asynchronous function
         setTimeout(function () {
-                document.body.style.webkitTransition = null;
-            }, 0);
+            document.body.style.webkitTransition = null;
+        }, 0);
     }
     ui('hideTabs').__proto__.addEventListener('change', function () {
-            if(this.checked) {
-                localStorage['hideTabs'] = true;
-            } else {
-                delete localStorage['hideTabs'];
-            }
-        });
+        if (this.checked) {
+            localStorage['hideTabs'] = true;
+        } else {
+            delete localStorage['hideTabs'];
+        }
+    });
     if (localStorage['allowJavaScript']) {
         ui('allowJavaScript').__proto__.checked = true;
     }
     ui('allowJavaScript').__proto__.addEventListener('change', function () {
-            if(this.checked) {
-                localStorage['allowJavaScript'] = true;
-                if (!ui('js').__proto__.checked) {
-                    ui('js').__proto__.click();
-                }
-            } else {
-                delete localStorage['allowJavaScript'];
-                if (ui('js').__proto__.checked) {
-                    ui('js').__proto__.click();
-                }
+        if (this.checked) {
+            localStorage['allowJavaScript'] = true;
+            if (!ui('js').__proto__.checked) {
+                ui('js').__proto__.click();
             }
-        });
+        } else {
+            delete localStorage['allowJavaScript'];
+            if (ui('js').__proto__.checked) {
+                ui('js').__proto__.click();
+            }
+        }
+    });
     if (localStorage['disableRequestLogging']) {
         ui('disableRequestLogging').__proto__.checked = true;
     }
     ui('disableRequestLogging').__proto__.addEventListener('change', function () {
-            if(this.checked) {
-                localStorage['disableRequestLogging'] = true;
-            } else {
-                delete localStorage['disableRequestLogging'];
-            }
-        });
+        if (this.checked) {
+            localStorage['disableRequestLogging'] = true;
+        } else {
+            delete localStorage['disableRequestLogging'];
+        }
+    });
     if (localStorage['useDefaultScrollbarInLog']) {
         ui('useDefaultScrollbarInLog').__proto__.checked = true;
     }
     ui('useDefaultScrollbarInLog').__proto__.addEventListener('change', function () {
-            if(this.checked) {
-                localStorage['useDefaultScrollbarInLog'] = true;
-            } else {
-                delete localStorage['useDefaultScrollbarInLog'];
-            }
-        });
+        if (this.checked) {
+            localStorage['useDefaultScrollbarInLog'] = true;
+        } else {
+            delete localStorage['useDefaultScrollbarInLog'];
+        }
+    });
 
     // set up the hide button
     ui('hider').__proto__.addEventListener('click', function () {
-            if (document.body.style.left == '-130px') {
-                document.body.style.left = null;
-                this.style.height = null;
-            } else {
-                document.body.style.left = '-130px';
-                this.style.height = '100%';
-            }
-        });
+        if (document.body.style.left == '-130px') {
+            document.body.style.left = null;
+            this.style.height = null;
+        } else {
+            document.body.style.left = '-130px';
+            this.style.height = '100%';
+        }
+    });
 
     parseQueryString();
 });

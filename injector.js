@@ -41,11 +41,11 @@ function absolutify(url) {
 	}
 
 	return url.replace(/(^https?:\/\/[^\/]+)(\/[^\?]+)(\?|$)/i, function ($0, $1, $2, $3) {
-			$2 = $2.replace(/\\/g, '/');
-			while ($2 != ($2 = $2.replace(/\/\.(\/|$)/g, '/')));
-			while ($2 != ($2 = $2.replace(/(^|\/[^\/]+)\/\.\.(\/|$)/g, '/')));
-			return $1 + $2 + $3;
-		});
+		$2 = $2.replace(/\\/g, '/');
+		while ($2 != ($2 = $2.replace(/\/\.(\/|$)/g, '/')));
+		while ($2 != ($2 = $2.replace(/(^|\/[^\/]+)\/\.\.(\/|$)/g, '/')));
+		return $1 + $2 + $3;
+	});
 }
 
 try {
@@ -64,9 +64,9 @@ try {
 		throw new Error('JavaScript is disabled'); // end execution
 	} else {
 		chrome.extension.sendRequest('yesScripts', function () {
-				// request logging disabled
-				document.documentElement.removeChild(script);
-			});
+			// request logging disabled
+			document.documentElement.removeChild(script);
+		});
 		document.documentElement.removeChild(noscript);
 	}
 
@@ -79,14 +79,14 @@ try {
 
 	// forward the events
 	script.addEventListener('chkponkhgjjimmbdfndpmaenfioopinf', function (event) {
-			chrome.extension.sendRequest({
-				'type': event.detail.type,
-				'method': event.detail.method,
-				'url': absolutify(event.detail.url),
-				'headers': event.detail.headers ? event.detail.headers : [ ],
-				'data': event.detail.data
-			});
+		chrome.extension.sendRequest({
+			'type': event.detail.type,
+			'method': event.detail.method,
+			'url': absolutify(event.detail.url),
+			'headers': event.detail.headers ? event.detail.headers : [],
+			'data': event.detail.data
 		});
+	});
 } catch (e) {
 	if (e.message != 'JavaScript is disabled') {
 		throw e;
