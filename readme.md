@@ -47,9 +47,11 @@ This project is a continuation of the <a href="https://chrome.google.com/webstor
 #
 <details>
   <summary>Screenshot / Preview</summary>
-  <img src="image-url" alt="image-description"/>
-  <img src="image-url" alt="image-description"/>
-  <img src="image-url" alt="image-description"/>
+  <img src="ss/ss-request-maker-1.png" alt="image-description"/>
+  <img src="ss/ss-request-maker-2.png" alt="image-description"/>
+  <img src="ss/ss-request-maker-3.png" alt="image-description"/>
+  <img src="ss/ss-request-maker-4.png" alt="image-description"/>
+  <img src="ss/ss-request-maker-5.png" alt="image-description"/>
 </details>
 
 #
