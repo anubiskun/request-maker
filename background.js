@@ -1,73 +1,83 @@
-/**
- * Copyright (c) 2011, 2012 Juho Nurminen
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- *    1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- *
- *    2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- *
- *    3. This notice may not be removed or altered from any source
- *    distribution.
- */
+// background.js
 
-var tabs = {};
+async function setStorage(key, value) {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.set({ [key]: value }, function() {
+			if (chrome.runtime.lastError) {
+				reject(chrome.runtime.lastError);
+			} else {
+				resolve();
+			}
+		});
+	});
+}
+async function getStorage(key) {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.get(key, function(result) {
+			if (chrome.runtime.lastError) {
+				reject(chrome.runtime.lastError);
+			} else {
+				resolve(result[key]);
+			}
+		});
+	});
+}
 
-delete localStorage['tabs']; // used in <= 0.1.1.6, no longer needed
+const tabs = {};
 
-chrome.browserAction.disable();
+// Disable the action initially
+chrome.action.disable();
 
-// get form data from the content scripts
-chrome.extension.onRequest.addListener(function (form, sender, stop) {
-	var id = sender.tab.id;
+// Message listener
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+	
+    const id = sender.tab?.id;
 
-	if (!tabs[id]) {
-		tabs[id] = {};
+    if (!tabs[id]) {
+        tabs[id] = {};
+    }
+
+	if (request.action === 'getTabData') {
+		sendResponse(tabs || {});
 	}
 
-	if (!localStorage['tabAutoFocus']) {
-		localStorage['tabAutoFocus'] = "true";
-	} else if (!localStorage['hideTabs']) {
-		localStorage['hideTabs'] = "true";
-	}
+	if (!await getStorage('tabAutoFocus')) {
+		await setStorage('tabAutoFocus', "true");
+	} else if (!await getStorage('hideTabs')) {
+		await setStorage('hideTabs', "true");
+	}	
 
-	if (form == 'noScripts' && !localStorage['disableRequestLogging']) {
-		tabs[id].noScripts = true;
-		chrome.browserAction.enable(id);
-	} else if (form == 'yesScripts') {
-		delete tabs[id].noScripts;
-		if (localStorage['disableRequestLogging']) {
-			stop();
+	try {
+		if (request.action === 'noScripts' && !(await getStorage('disableRequestLogging'))) {
+			tabs[id].noScripts = true;
+			chrome.action.enable(id);
+		} else if (request.action === 'yesScripts') {
+			delete tabs[id].noScripts;
+			if (await getStorage('disableRequestLogging')) {
+				sendResponse(true);
+			} 
+		} else if (!(await getStorage('disableRequestLogging'))) {
+			if (!tabs[id].forms) {
+				tabs[id].forms = [];
+			}
+			tabs[id].forms.push(request);
+			
+			chrome.action.enable(id);
 		}
-	} else if (!localStorage['disableRequestLogging']) {
-		if (!tabs[id].forms) {
-			tabs[id].forms = [];
-		}
-		tabs[id].forms.push(form);
-		chrome.browserAction.enable(id);
+	} catch (error) {
+		console.error("Error handling message:", error);
 	}
+	
 });
 
-
-// show the page action where necessary
-chrome.tabs.onUpdated.addListener(function (id, info) {
-	if (tabs[id] && tabs[id].forms) {
-		chrome.browserAction.enable(id);
-	}
+// Tab update listener
+chrome.tabs.onUpdated.addListener(async (id, info) => {
+    if (tabs[id] && tabs[id].forms) {
+        chrome.action.enable(id);
+    }
 });
 
-
-// clean up
+// Tab removal listener
 chrome.tabs.onRemoved.addListener(function (id) {
-	delete tabs[id];
+    delete tabs[id];
 });

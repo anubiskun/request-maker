@@ -1,25 +1,25 @@
-/**
- * Copyright (c) 2011, 2012 Juho Nurminen
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- *    1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- *
- *    2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- *
- *    3. This notice may not be removed or altered from any source
- *    distribution.
- */
+async function setStorage(key, value) {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.set({ [key]: value }, function() {
+			if (chrome.runtime.lastError) {
+				reject(chrome.runtime.lastError);
+			} else {
+				resolve();
+			}
+		});
+	});
+}
+async function getStorage(key) {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.get(key, function(result) {
+			if (chrome.runtime.lastError) {
+				reject(chrome.runtime.lastError);
+			} else {
+				resolve(result[key]);
+			}
+		});
+	});
+}
 
 function $(s) {
     return document.getElementById(s);
@@ -49,17 +49,18 @@ function addForm(form) {
     newtab = document.createElement('td');
     newtab.title = 'Open in a new tab';
     newtab.addEventListener('click', function (e) {
-        chrome.tabs.create({ 'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
+        chrome.tabs.create({ 'url': chrome.runtime.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
         e.stopPropagation();
     });
     row.appendChild(newtab);
 
     row.addEventListener('click', function (e) {
         if (e.button == 1) {
-            chrome.tabs.create({ 'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
+            chrome.tabs.create({ 'url': chrome.runtime.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
         } else {
-            chrome.tabs.getSelected(null, function (tab) {
-                chrome.tabs.update(tab.id, { 'url': chrome.extension.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                var tab = tabs[0];
+                chrome.tabs.update(tab.id, { 'url': chrome.runtime.getURL('rm.html') + '?' + btoa(unescape(encodeURI(JSON.stringify(form)))) });
             });
         }
     });
@@ -134,76 +135,87 @@ function matchesWithFilter(form) {
     return true;
 }
 
-window.addEventListener('load', function () {
-    var style;
+$db = {};
 
-    // set up the scrollbar
-    if (!localStorage['useDefaultScrollbarInLog']) {
+window.addEventListener('load', async () => {
+    let style;
+
+    // Set up the custom scrollbar if the default scrollbar is not being used
+    if (!(await getStorage('useDefaultScrollbarInLog'))) {
         style = document.createElement('style');
         style.setAttribute('type', 'text/css');
-        style.innerText =
-            '::-webkit-scrollbar {' +
-            '	width: 4px;' +
-            '	border-left: solid 1px #F0F0F0;' +
-            '}' +
-
-            '::-webkit-scrollbar-button {' +
-            '	height: 0;' +
-            '}' +
-
-            '::-webkit-scrollbar-thumb {' +
-            '	border: solid 1px #BBB;' +
-            '	border-right: none;' +
-            '	background: #F0F0F0;' +
-            '	-webkit-box-shadow: inset 1px 0 3px #AAA;' +
-            '}';
+        style.innerText = `
+            ::-webkit-scrollbar {
+                width: 4px;
+                border-left: solid 1px #F0F0F0;
+            }
+            ::-webkit-scrollbar-button {
+                height: 0;
+            }
+            ::-webkit-scrollbar-thumb {
+                border: solid 1px #BBB;
+                border-right: none;
+                background: #F0F0F0;
+                -webkit-box-shadow: inset 1px 0 3px #AAA;
+            }
+        `;
         document.head.appendChild(style);
     }
 
-    // get forms from the current tab
-    chrome.tabs.getSelected(null, function (tab) {
-        var i, data = chrome.extension.getBackgroundPage().tabs[tab.id], tid = tab.id;
+    // Get forms from the current tab
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const tid = tabs[0].id;
 
-        $('filter').value = data.filter || ''; // restore the filter
+        chrome.runtime.sendMessage({ action: "getTabData", tabId: tid }, (datas) => {
+            $db.forms = datas[tid].forms;
 
-        if (data.noScripts) {
-            $('noScripts').style.display = 'block';
-        }
+            // Restore the filter value and handle noScripts display
+            $('filter').value = $db.filter || '';
 
-        function showForms() {
-            data.filter = $('filter').value; // save the filter
-
-            $('forms').innerHTML = '';
-            for (i = 0; i < (data.forms || []).length; i++) {
-                if (matchesWithFilter(data.forms[i])) {
-                    addForm(data.forms[i]);
+            if ($db.noScripts) {
+                $('noScripts').style.display = 'block';
+            }
+    
+            // Function to display forms based on the filter
+            const showForms = () => {
+                $db.filter = $('filter').value;
+                $('forms').innerHTML = '';
+    
+                ($db.forms || []).forEach(form => {
+                    if (matchesWithFilter(form)) {
+                        addForm(form);
+                    }
+                });
+    
+                setTimeout(() => {
+                    $('scroller').scrollTop = $('scroller').scrollHeight;
+                }, 0);
+            };
+    
+            // Initial display of forms
+            showForms();
+    
+            // Add event listeners for the filter input
+            $('filter').addEventListener('keyup', showForms);
+            $('filter').addEventListener('paste', showForms);
+            $('filter').addEventListener('click', showForms);
+    
+    
+            // Update in real-time when a message is received
+            chrome.runtime.onMessage.addListener((form, sender) => {
+                if (form.anu) {
+                    if (typeof form !== 'string' && sender.tab.id === tid && matchesWithFilter(form)) {
+                        addForm(form);
+                    }
                 }
-            }
-            setTimeout(function () {
-                $('scroller').scrollTop = $('scroller').scrollHeight;
-            }, 0);
-        };
-
-        showForms();
-
-        $('filter').addEventListener('keyup', showForms);
-        $('filter').addEventListener('paste', showForms);
-        $('filter').addEventListener('click', showForms);
-
-        // update in real time
-        chrome.extension.onRequest.addListener(function (form, sender) {
-            if (typeof form != 'string' && sender.tab.id == tid && matchesWithFilter(form)) {
-                addForm(form);
-            }
-        });
-
-        // set up the clear button
-        $('clear').addEventListener('click', function () {
-            data.forms = [];
-            $('forms').innerHTML = '';
-            if (!data.noScripts) {
-                chrome.pageAction.hide(tid);
-            }
+            });
+            // Set up the clear button
+            $('clear').addEventListener('click', () => {
+                $db.forms = [];
+                showForms();
+                $('forms').innerHTML = '';
+            });
         });
     });
 });
+

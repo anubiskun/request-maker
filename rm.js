@@ -1,25 +1,37 @@
-/**
- * Copyright (c) 2011, 2012, 2013, 2014 Juho Nurminen
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- *    1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- *
- *    2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- *
- *    3. This notice may not be removed or altered from any source
- *    distribution.
- */
+async function setStorage(key, value) {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.set({ [key]: value }, function() {
+			if (chrome.runtime.lastError) {
+				reject(chrome.runtime.lastError);
+			} else {
+				resolve();
+			}
+		});
+	});
+}
+async function getStorage(key) {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.get(key, function(result) {
+			if (chrome.runtime.lastError) {
+				reject(chrome.runtime.lastError);
+			} else {
+				resolve(result[key]);
+			}
+		});
+	});
+}
+
+async function delStorage(key) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.remove(key, function() {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(); // success
+            }
+        });
+    });
+}
 
 function getForm() {
     var s, form = {
@@ -304,10 +316,10 @@ function parseQueryString() {
     }
 
     // clear no-scripts notice
-    chrome.extension.sendRequest('yesScripts');
+    chrome.runtime.sendMessage({ action: 'yesScripts' });
 }
 
-ui.onReady(function () {
+ui.onReady(async () => {
 
     window.addEventListener('popstate', parseQueryString);
 
@@ -325,7 +337,7 @@ ui.onReady(function () {
         // reset the status
         ui('HTTPStatusText').__proto__.innerText = '';
         // do the XHR
-        request.addEventListener('readystatechange', function () {
+        request.addEventListener('readystatechange', async function () {
             var doctype, html, title;
 
             // update the status
@@ -336,7 +348,7 @@ ui.onReady(function () {
             switch (this.readyState) {
                 case this.HEADERS_RECEIVED:
                     ui('tabs').enableTab(1);
-                    if (localStorage['tabAutoFocus']) {
+                    if (await getStorage('tabAutoFocus')) {
                         ui('tabs').showTab(1);
                     }
 
@@ -346,7 +358,7 @@ ui.onReady(function () {
                 case this.responseText && this.DONE:
                     ui('source').__proto__.contentWindow.location.replace('view-source/view-source.html?m=' + this.getResponseHeader("Content-Type").split(';')[0] + '&c=' + encodeURIComponent(this.responseText));
                     ui('tabs').enableTab(3);
-                    if (localStorage['tabAutoFocus']) {
+                    if (await getStorage('tabAutoFocus')) {
                         ui('tabs').showTab(3);
                     }
                     if (this.getResponseHeader("Content-Type") && (
@@ -396,7 +408,7 @@ ui.onReady(function () {
                         );
 
                         ui('tabs').enableTab(2);
-                        if (localStorage['tabAutoFocus']) {
+                        if (await getStorage('tabAutoFocus')) {
                             ui('tabs').showTab(2);
                         }
                     }
@@ -427,7 +439,7 @@ ui.onReady(function () {
         }
 
         // log the request in the page action
-        chrome.extension.sendRequest(form);
+        chrome.runtime.sendMessage(form);
 
         history.pushState(null, null, '?' + btoa(unescape(encodeURI(JSON.stringify(form)))));
 
@@ -477,22 +489,22 @@ ui.onReady(function () {
 
         ui('document').__proto__.src = ui('document').__proto__.src;
     });
-    if (localStorage['allowJavaScript']) {
+    if (await getStorage('allowJavaScript')) {
         ui('js').__proto__.click();
     }
 
     // options tab
-    if (localStorage['tabAutoFocus']) {
+    if (await getStorage('tabAutoFocus')) {
         ui('tabAutoFocus').__proto__.checked = true;
     }
-    ui('tabAutoFocus').__proto__.addEventListener('change', function () {
+    ui('tabAutoFocus').__proto__.addEventListener('change', async () => {
         if (this.checked) {
-            localStorage['tabAutoFocus'] = true;
+            await setStorage('tabAutoFocus', true);
         } else {
-            delete localStorage['tabAutoFocus'];
+            await delStorage('tabAutoFocus');
         }
     });
-    if (localStorage['hideTabs']) {
+    if (await getStorage('hideTabs')) {
         ui('hideTabs').__proto__.checked = true;
         ui('hider').__proto__.style.height = '100%';
         document.body.style.webkitTransition = '0';
@@ -502,47 +514,47 @@ ui.onReady(function () {
             document.body.style.webkitTransition = null;
         }, 0);
     }
-    ui('hideTabs').__proto__.addEventListener('change', function () {
+    ui('hideTabs').__proto__.addEventListener('change', async () => {
         if (this.checked) {
-            localStorage['hideTabs'] = true;
+            await setStorage('hideTabs', true);
         } else {
-            delete localStorage['hideTabs'];
+            await delStorage('hideTabs');
         }
     });
-    if (localStorage['allowJavaScript']) {
+    if (await getStorage('allowJavaScript')) {
         ui('allowJavaScript').__proto__.checked = true;
     }
-    ui('allowJavaScript').__proto__.addEventListener('change', function () {
+    ui('allowJavaScript').__proto__.addEventListener('change', async () => {
         if (this.checked) {
-            localStorage['allowJavaScript'] = true;
+            await setStorage('allowJavaScript', true);
             if (!ui('js').__proto__.checked) {
                 ui('js').__proto__.click();
             }
         } else {
-            delete localStorage['allowJavaScript'];
+            await delStorage('allowJavaScript');
             if (ui('js').__proto__.checked) {
                 ui('js').__proto__.click();
             }
         }
     });
-    if (localStorage['disableRequestLogging']) {
+    if (await getStorage('disableRequestLogging')) {
         ui('disableRequestLogging').__proto__.checked = true;
     }
-    ui('disableRequestLogging').__proto__.addEventListener('change', function () {
+    ui('disableRequestLogging').__proto__.addEventListener('change', async () => {
         if (this.checked) {
-            localStorage['disableRequestLogging'] = true;
+            await setStorage('disableRequestLogging', true);
         } else {
-            delete localStorage['disableRequestLogging'];
+            await delStorage('disableRequestLogging');
         }
     });
-    if (localStorage['useDefaultScrollbarInLog']) {
+    if (await getStorage('useDefaultScrollbarInLog')) {
         ui('useDefaultScrollbarInLog').__proto__.checked = true;
     }
-    ui('useDefaultScrollbarInLog').__proto__.addEventListener('change', function () {
+    ui('useDefaultScrollbarInLog').__proto__.addEventListener('change', async () => {
         if (this.checked) {
-            localStorage['useDefaultScrollbarInLog'] = true;
+            await setStorage('useDefaultScrollbarInLog', true);
         } else {
-            delete localStorage['useDefaultScrollbarInLog'];
+            await delStorage('useDefaultScrollbarInLog');
         }
     });
 

@@ -1,29 +1,38 @@
 {
-   "background": {
-      "page": "background.html"
-   },
-   "browser_action": {
-      "default_icon": "images/pageAction.png",
-      "default_popup": "popup.html",
-      "default_title": "View logged requests..."
-   },
-   "content_scripts": [ {
-      "all_frames": true,
-      "js": [ "injector.js" ],
-      "matches": [ "\u003Call_urls>" ],
-      "run_at": "document_start"
-   } ],
-   "description": "Log, edit and send HTTP requests",
-   "icons": {
-      "128": "images/128.png",
-      "16": "images/16.png",
-      "48": "images/48.png"
-   },
-   "incognito": "split",
-   "manifest_version": 2,
+   "manifest_version": 3,
    "name": "Request Maker",
+   "version": "0.2.0.1",
+   "description": "Log, edit and send HTTP requests",
+   "permissions": ["tabs", "storage", "scripting", "activeTab"],
+   "background": {
+     "service_worker": "background.js"
+   },
+   "action": {
+     "default_icon": "images/pageAction.png",
+     "default_popup": "popup.html",
+     "default_title": "View logged requests..."
+   },
+   "content_scripts": [
+     {
+       "all_frames": true,
+       "js": ["injector.js"],
+       "matches": ["<all_urls>"],
+       "run_at": "document_start"
+     }
+   ],
+   "icons": {
+     "128": "images/128.png",
+     "16": "images/16.png",
+     "48": "images/48.png"
+   },
    "options_page": "rm.html#options",
-   "permissions": [ "tabs", "\u003Call_urls>" ],
-   "version": "0.1.2.16",
-   "web_accessible_resources": [ "catcher.js" ]
-}
+   "incognito": "split",
+   "host_permissions": ["<all_urls>"],
+   "web_accessible_resources": [
+     {
+       "resources": ["catcher.js"],
+       "matches": ["<all_urls>"]
+     }
+   ]
+ }
+ 
